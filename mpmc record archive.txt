@@ -222,57 +222,28 @@ Address	Opcode		Mnemonics
 
 --------------------------------------
 PANTECH
-Stepper Motor 8051 - EXP NO - 7:
-
-ADDRESS	OPCODE		MNEMONICS
-9100	74 80		MOV A, #80
-9102	90 40 03	MOV DPTR, #4003
-9105	F0		MOVX @DPTR, A
-9106	90 92 00	START: MOV DPTR, #9200
-9109	A9 82		MOV R1, DPL
-910B	AA 83		MOV R2, DPH
-910D	78 04		MOV R0, #04
-910F	E0		REP: MOVX A, @DPTR
-9110	90 40 00	MOV DPTR, #4000
-9113	F0		MOVX @DPTR, A
-9114	12 91 20	LCALL DELY
-9117	09		INC R1
-9118	89 82		MOV DPL, R1
-911A	8A 83		MOV DPH, R2
-911C	D8 F1		DJNZ R0, REP
-911E	80 E6		SJMP START
-9120	7F 03		DELY: MOV R7, #03
-9122	7E 0A		LOP3: MOV R6, #0A
-9124	7B FF		LOP2: MOV R3, #FF
-9126	DB FE		LOP1: DJNZ R3, LOP1
-9128	DE FA		DJNZ R6, LOP2
-912A	DF F6		DJNZ R7, LOP3
-912C	22		RET
-
-
-------------------------------------
-PANTECH
 stepper motor of 8086 - EXP NO - 3:
 
 
-ADDRESS	OPCODE		MNEMONICS
-1100	B0 80		MOV AL, 80
-1102	BA 36 FF	MOV DX, FF36
-1105	EE		OUT DX, AL
-1106	BE 00 12	START: MOV SI, 1200
-1109	B3 04		MOV BL, 04
-110B	8A 04		REPEAT: MOV AL, [SI]
-110D	BA 30 FF	MOV DX, FF30
-1110	EE		OUT DX, AL
-1111	EB 07 00	CALL DELAY
-1114	46		INC SI
-1115	FE CB		DEC BL
-1117	75 F2		JNE REPEAT
-1119	EB EB		JMP START
-111B	B9 03 09	DELAY: MOV CX, 0903
-111E	49		LOOP: DEC CX
-111F	75 FD		JNE LOOP
-1121	C3		RET
+| ADDRESS | OPCODE     | MNEMONICS               |
+|---------|------------|-------------------------|
+| 1100    | B0 80      | MOV AL,80               |
+| 1102    | BA 36 FF   | MOV DX,FF36             |
+| 1105    | EE         | OUT DX,AL               |
+| 1106    | BE 00 12   | START : MOV SI,1200     |
+| 1109    | 83 04      | MOV BL,04               |
+| 110B    | 8A 04      | REPEAT : MOV AL,[SI]    |
+| 110D    | BA 30 FF   | MOV DX,FF30             |
+| 1110    | EE         | OUT DX,AL               |
+| 1111    | E8 07 00   | CALL DELAY              |
+| 1114    | 46         | INC SI                  |
+| 1115    | FE CB      | DEC BL                  |
+| 1117    | 75 F2      | JNE REPEAT              |
+| 1119    | EB EB      | JMP START               |
+| 111B    | B9 03 09   | DELAY : MOV CX,0903     |
+| 111E    | 49         | LOOP : DEC CX           |
+| 111F    | 75 FD      | JNE LOOP                |
+| 1121    | C3         | RET                     |
 
 
 For clockwise: 0A 06 05 09
@@ -347,3 +318,209 @@ EXP NO 7 - STEPPER MOTOR 8051
 | 9128    | DE FA      | DJNZ R6,LOP2            |
 | 912A    | DF F6      | DJNZ R7,LOP3            |
 | 912C    | 22         | RET                     |
+
+
+
+EXP NO 5 - serial
+
+Receiver Code:
+#include <reg51.h>
+
+void delay(unsigned int i);
+void lcd_cmd(unsigned char a);
+void lcd_data(unsigned char b);
+void lcd_init(void);
+void lcd_str(unsigned char *str);
+void sendser_char(unsigned char b);
+void sendser_str(unsigned char *str);
+
+sbit rs = P2^0;
+sbit en = P2^1;
+sbit led = P2^6;
+sfr ldata = 0x90;
+unsigned char rx;
+
+void main() {
+    TMOD = 0x20;
+    TH1 = 0xfd;
+    SCON = 0x50;
+    TR1 = 1;
+
+    lcd_init();
+    lcd_str("Embedded C++");
+    delay(65000);
+    lcd_cmd(0x01);
+    lcd_cmd(0x80);
+    lcd_str("LED Status");
+
+    while(1) {
+        while(RI == 0);
+        rx = SBUF;
+        RI = 0;
+
+        if(rx == 'A') {
+            led = 1;
+            delay(6500);
+            lcd_cmd(0x01);
+            lcd_cmd(0x80);
+            lcd_str("LED Status");
+            lcd_cmd(0xc0);
+            lcd_cmd(0x14);
+            lcd_str("LED ON");
+        } else if(rx == 'B') {
+            led = 0;
+            delay(6500);
+            lcd_cmd(0x01);
+            lcd_cmd(0x80);
+            lcd_str("LED Status");
+            lcd_cmd(0xc0);
+            lcd_cmd(0x14);
+            lcd_str("LED OFF");
+        }
+    }
+}
+
+void lcd_init() {
+    lcd_cmd(0x38);
+    lcd_cmd(0x0c);
+    lcd_cmd(0x01);
+    lcd_cmd(0x80);
+}
+
+void delay(unsigned int i) {
+    unsigned int j;
+    for(j = 0; j < i; j++);
+}
+
+void lcd_cmd(unsigned char a) {
+    rs = 0;
+    ldata = a;
+    en = 1;
+    delay(5);
+    en = 0;
+    delay(5);
+}
+
+void lcd_data(unsigned char b) {
+    rs = 1;
+    ldata = b;
+    en = 1;
+    delay(5);
+    en = 0;
+    delay(5);
+}
+
+void lcd_str(unsigned char *str) {
+    while(*str) {
+        lcd_data(*str++);
+    }
+}
+
+void sendser_char(unsigned char b) {
+    SBUF = b;
+    while(TI == 0);
+    TI = 0;
+}
+
+void sendser_str(unsigned char *str) {
+    while(*str) {
+        sendser_char(*str++);
+    }
+}
+
+
+Transmitter Code:
+#include <reg51.h>
+
+void delay(unsigned int i);
+void lcd_cmd(unsigned char a);
+void lcd_data(unsigned char b);
+void lcd_init(void);
+void lcd_str(unsigned char *str);
+void sendser_char(unsigned char b);
+void sendser_str(unsigned char *str);
+
+sbit rs = P2^0;
+sbit en = P2^1;
+sbit sw = P2^5;
+sfr ldata = 0x90;
+
+void main() {
+    TMOD = 0x20;
+    TH1 = 0xfd;
+    SCON = 0x50;
+    TR1 = 1;
+
+    lcd_init();
+    lcd_str("Embedded C++");
+    delay(65000);
+    lcd_cmd(0x01);
+
+    while(1) {
+        if(sw == 0) {
+            delay(7000);
+            lcd_cmd(0x01);
+            lcd_cmd(0x80);
+            lcd_str("SW Status");
+            lcd_cmd(0xc0);
+            lcd_str("SW ON");
+            sendser_char('A');
+        } else {
+            delay(7000);
+            lcd_cmd(0x01);
+            lcd_cmd(0x80);
+            lcd_str("SW Status");
+            lcd_cmd(0xc0);
+            lcd_str("SW OFF");
+            sendser_char('B');
+        }
+    }
+}
+
+void lcd_init() {
+    lcd_cmd(0x38);
+    lcd_cmd(0x0c);
+    lcd_cmd(0x01);
+    lcd_cmd(0x80);
+}
+
+void delay(unsigned int i) {
+    unsigned int j;
+    for(j = 0; j < i; j++);
+}
+
+void lcd_cmd(unsigned char a) {
+    rs = 0;
+    ldata = a;
+    en = 1;
+    delay(5);
+    en = 0;
+    delay(5);
+}
+
+void lcd_data(unsigned char b) {
+    rs = 1;
+    ldata = b;
+    en = 1;
+    delay(5);
+    en = 0;
+    delay(5);
+}
+
+void lcd_str(unsigned char *str) {
+    while(*str) {
+        lcd_data(*str++);
+    }
+}
+
+void sendser_char(unsigned char b) {
+    SBUF = b;
+    while(TI == 0);
+    TI = 0;
+}
+
+void sendser_str(unsigned char *str) {
+    while(*str) {
+        sendser_char(*str++);
+    }
+}
