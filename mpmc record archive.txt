@@ -193,30 +193,31 @@ PANTECH
 ADC - 8051 - EXP no - 6:
 
 
-Address	Opcode		Mnemonics
-9100	74 90		MOV A,#90
-9102	90 40 03	MOV DPTR,#4003
-9105	F0		MOVX @DPTR,A
-9106	90 40 01	MOV DPTR,#4001
-9109	74 01		MOV A,#01
-9108	F0		MOVX @DPTR,A
-910C	74 31		MOV A,#31
-910E	F0		MOVX @DPTR,A
-910F	74 01		MOV A,#01
-9111	F0		BACK: MOVX @DPTR,A
-9112	54 01		ANL A,#01
-9114	30 0A FA	JNB 0A,BACK
-9117	74 40		MOV A,#40
-9119	F0		MOVX @DPTR,A
-911A	12 91 24	LCALL DELAY
-911D	90 40 00	MOV DPTR,#4000
-9120	E0		MOVX A,@DPTR
-9121	12 00 86	LCALL 0086
-9124	78 FF		DELAY: MOV R0,#FF
-9126	79 FF		LOP: MOV R1,#FF
-9128	D9 FE		LOP1: DJNZ R1,LOP1
-912A	D8 FA		DJNZ R0,LOP
-912C	22		RET
+| Address | Label  | Opcode     | Mnemonics            |
+|---------|--------|------------|----------------------|
+| 9100    |        | 74 90      | MOV A,#90            |
+| 9102    |        | 90 40 03   | MOV DPTR,#4003       |
+| 9105    |        | F0         | MOVX @DPTR,A         |
+| 9106    |        | 90 40 01   | MOV DPTR,#4001       |
+| 9109    |        | 74 01      | MOV A,#01            |
+| 9108    |        | F0         | MOVX @DPTR,A         |
+| 910C    |        | 74 31      | MOV A,#31            |
+| 910E    |        | F0         | MOVX @DPTR,A         |
+| 910F    |        | 74 01      | MOV A,#01            |
+| 9111    | BACK   | F0         | MOVX @DPTR,A         |
+| 9112    |        | 54 01      | ANL A,#01            |
+| 9114    |        | 30 0A FA   | JNB 0A,BACK          |
+| 9117    |        | 74 40      | MOV A,#40            |
+| 9119    |        | F0         | MOVX @DPTR,A         |
+| 911A    |        | 12 91 24   | LCALL DELAY          |
+| 911D    |        | 90 40 00   | MOV DPTR,#4000       |
+| 9120    |        | E0         | MOVX A,@DPTR         |
+| 9121    |        | 12 00 86   | LCALL 0086           |
+| 9124    | DELAY  | 78 FF      | MOV R0,#FF           |
+| 9126    | LOOP   | 79 FF      | MOV R1,#FF           |
+| 9128    | LOOP1  | D9 FE      | DJNZ R1,LOOP1        |
+| 912A    |        | D8 FA      | DJNZ R0,LOOP         |
+| 912C    |        | 22         | RET                  |
 
 
 
